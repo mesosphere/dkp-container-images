@@ -61,6 +61,7 @@ func WriteMarkdown(report Report, w io.Writer) error {
 			mdRow = append(mdRow, md.Link("View error", fmt.Sprintf("#error-%d", i)))
 			details = append(details, []string{
 				row.Image,
+				fmt.Sprintf("error-%d", i),
 				row.Error,
 				row.Output,
 			})
@@ -70,8 +71,12 @@ func WriteMarkdown(report Report, w io.Writer) error {
 
 	doc.H2("Patched images").LF().Table(imagesTable)
 
+	if len(details) > 0 {
+		doc.H2("Errors")
+	}
 	for _, detail := range details {
-		doc.Details(detail[0], fmt.Sprintf("```%s```", detail[1]))
+		doc.PlainText(fmt.Sprintf(`<a name="%s" />`, detail[1]))
+		doc.Details(detail[0], fmt.Sprintf("<pre>%s</pre>", detail[2]))
 	}
 
 	return doc.Build()
