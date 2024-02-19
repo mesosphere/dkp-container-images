@@ -73,6 +73,8 @@ runs:
         GCO_ENABLED: "0"
         GOWORK: "off"
         BUILDX_BUILDER: "copacetic-action"
+        GITHUB_ACTOR: ${{ github.actor }}
+        GITHUB_TOKEN: ${{ inputs.github-token }}
 
     - name: generate-md-report
       id: generate-md-report
