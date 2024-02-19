@@ -54,12 +54,12 @@ func Run(ctx context.Context, imageRef string, reg registry.Registry, imageTagSu
 		return withErr(t, err), err
 	}
 
-	if len(report.Results) == 0 {
+	if len(report.Vulnerabilities()) == 0 {
 		logger.Info("no fixable vulnerabilities found in scanned image", "scannedImage", imagePatch.Scanned)
 		return t, nil
 	}
 
-	logger.Info("found patchable vulnerabilities", "report", report.Results)
+	logger.Info("found patchable vulnerabilities", "vulnerabilites", report.Vulnerabilities())
 
 	buildId, err := randutil.Alphanumeric(5)
 	logger.Info("generated unique buildId", "buildId", buildId)

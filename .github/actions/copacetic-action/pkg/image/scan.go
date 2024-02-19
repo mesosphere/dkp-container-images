@@ -22,6 +22,14 @@ func (r *Report) WriteTo(path string) error {
 	return os.WriteFile(path, data, 0o755)
 }
 
+func (r *Report) Vulnerabilities() []types.DetectedVulnerability {
+	vulnerabilities := []types.DetectedVulnerability{}
+	for _, resultClass := range r.Results {
+		vulnerabilities = append(vulnerabilities, resultClass.Vulnerabilities...)
+	}
+	return vulnerabilities
+}
+
 type CmdErr struct {
 	Err    error
 	Stdout []byte
