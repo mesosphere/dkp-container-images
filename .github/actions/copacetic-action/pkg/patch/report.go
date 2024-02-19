@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"strings"
 
 	md "github.com/go-spectest/markdown"
 
@@ -58,7 +59,7 @@ func WriteMarkdown(report Report, w io.Writer) error {
 			md.Code(row.Patched),
 		}
 		if row.Error != "" {
-			mdRow = append(mdRow, md.Link("View error", fmt.Sprintf("#error-%d", i)))
+			mdRow = append(mdRow, md.Link("View error", fmt.Sprintf("#user-content-error-%d", i)))
 			details = append(details, []string{
 				row.Image,
 				fmt.Sprintf("error-%d", i),
@@ -75,8 +76,12 @@ func WriteMarkdown(report Report, w io.Writer) error {
 		doc.H2("Errors")
 	}
 	for _, detail := range details {
-		doc.PlainText(fmt.Sprintf(`<a name="%s" />`, detail[1]))
-		doc.Details(detail[0], fmt.Sprintf("<pre>%s</pre>", detail[2]))
+		doc.PlainText(fmt.Sprintf(`<a name="%s"></a>`, detail[1]))
+		content := []string{}
+		for i := 2; i < len(detail); i++ {
+			content = append(content, fmt.Sprintf("<pre>%s</pre>", detail[i]))
+		}
+		doc.Details(detail[0], strings.Join(content, "\n"))
 	}
 
 	return doc.Build()
