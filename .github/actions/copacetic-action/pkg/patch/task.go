@@ -59,6 +59,8 @@ func Run(ctx context.Context, imageRef string, reg registry.Registry, imageTagSu
 		return t, nil
 	}
 
+	logger.Info("found patchable vulnerabilities", "report", report.Results)
+
 	buildId, err := randutil.Alphanumeric(5)
 	logger.Info("generated unique buildId", "buildId", buildId)
 	if err != nil {
