@@ -5,7 +5,6 @@ import (
 	"errors"
 	"fmt"
 	"io"
-	"strings"
 
 	md "github.com/go-spectest/markdown"
 
@@ -50,24 +49,30 @@ func WriteMarkdown(report Report, w io.Writer) error {
 	imagesTable := md.TableSet{
 		Header: []string{"Image", "Patched", "Error"},
 	}
-	for _, row := range report {
+
+	details := [][]string{}
+
+	for i, row := range report {
 		mdRow := []string{
-			row.Image,
-			row.Patched,
-			row.Error,
+			md.Code(row.Image),
+			md.Code(row.Patched),
 		}
-		for i := range mdRow {
-			if len(mdRow[i]) > 0 {
-				mdRow[i] = codeForTable(mdRow[i])
-			}
+		if row.Error != "" {
+			mdRow = append(mdRow, md.Link("View error", fmt.Sprintf("#error-%d", i)))
+			details = append(details, []string{
+				row.Image,
+				row.Error,
+				row.Output,
+			})
 		}
 		imagesTable.Rows = append(imagesTable.Rows, mdRow)
 	}
 
-	doc.H2("Patched images").PlainText("").Table(imagesTable)
-	return doc.Build()
-}
+	doc.H2("Patched images").LF().Table(imagesTable)
 
-func codeForTable(s string) string {
-	return fmt.Sprintf("<pre>%s</pre>", strings.ReplaceAll(s, "\n", "<br/>"))
+	for _, detail := range details {
+		doc.Details(detail[0], fmt.Sprintf("```%s```", detail[1]))
+	}
+
+	return doc.Build()
 }
