@@ -59,13 +59,17 @@ func WriteMarkdown(report Report, w io.Writer) error {
 			md.Code(row.Patched),
 		}
 		if row.Error != "" {
-			mdRow = append(mdRow, md.Link("View error", fmt.Sprintf("#user-content-error-%d", i)))
-			details = append(details, []string{
+			mdRow = append(mdRow, md.Link("View error", fmt.Sprintf("#error-%d", i)))
+			detailsRow := []string{
 				row.Image,
 				fmt.Sprintf("error-%d", i),
 				row.Error,
-				row.Output,
-			})
+			}
+
+			if len(row.Output) > 0 {
+				detailsRow = append(detailsRow, row.Output)
+			}
+			details = append(details, detailsRow)
 		}
 		imagesTable.Rows = append(imagesTable.Rows, mdRow)
 	}
