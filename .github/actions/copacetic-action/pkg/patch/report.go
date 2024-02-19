@@ -51,15 +51,17 @@ func WriteMarkdown(report Report, w io.Writer) error {
 		Header: []string{"Image", "Patched", "Error"},
 	}
 
-	details := [][]string{}
+	errorDetails := [][]string{}
 
 	for i, row := range report {
 		mdRow := []string{
 			md.Code(row.Image),
 			md.Code(row.Patched),
 		}
+
 		if row.Error != "" {
 			mdRow = append(mdRow, md.Link("View error", fmt.Sprintf("#error-%d", i)))
+
 			detailsRow := []string{
 				row.Image,
 				fmt.Sprintf("error-%d", i),
@@ -69,23 +71,27 @@ func WriteMarkdown(report Report, w io.Writer) error {
 			if len(row.Output) > 0 {
 				detailsRow = append(detailsRow, row.Output)
 			}
-			details = append(details, detailsRow)
+
+			errorDetails = append(errorDetails, detailsRow)
+		} else {
+			mdRow = append(mdRow, "")
 		}
+
 		imagesTable.Rows = append(imagesTable.Rows, mdRow)
 	}
 
 	doc.H2("Patched images").LF().Table(imagesTable)
 
-	if len(details) > 0 {
+	if len(errorDetails) > 0 {
 		doc.H2("Errors")
 	}
-	for _, detail := range details {
+	for _, detail := range errorDetails {
 		doc.PlainText(fmt.Sprintf(`<a name="%s"></a>`, detail[1]))
-		content := []string{}
+		detailsContent := []string{}
 		for i := 2; i < len(detail); i++ {
-			content = append(content, fmt.Sprintf("<pre>%s</pre>", detail[i]))
+			detailsContent = append(detailsContent, fmt.Sprintf("<pre>%s</pre>", detail[i]))
 		}
-		doc.Details(detail[0], strings.Join(content, "\n"))
+		doc.Details(detail[0], strings.Join(detailsContent, "\n"))
 	}
 
 	return doc.Build()
