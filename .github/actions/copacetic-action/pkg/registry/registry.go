@@ -78,7 +78,15 @@ func (r *ghcrRegistry) ListTags(ctx context.Context, sourceImageRef string) ([]s
 }
 
 func (r *ghcrRegistry) patchedImageName(ref name.Reference) string {
-	return fmt.Sprintf("%s/%s/%s", ghcrDomain, r.organization, ref.Context().String())
+	imageRef := ref.Context().String()
+	return fmt.Sprintf("%s/%s/%s", ghcrDomain, r.organization, r.fixIndexDockerRegistry(imageRef))
+}
+
+func (r *ghcrRegistry) fixIndexDockerRegistry(imageRef string) string {
+	if strings.HasPrefix(imageRef, "index.docker.io") {
+		return strings.TrimPrefix(imageRef, "index.")
+	}
+	return imageRef
 }
 
 func (r *ghcrRegistry) defaultCraneOpts(ctx context.Context) []crane.Option {
@@ -109,12 +117,13 @@ func (r *ghcrRegistry) isNotFoundError(err error) bool {
 
 // ImageRef returns reference of patched image in the cache registry.
 func (r *ghcrRegistry) ImageRef(sourceImageRef, tag string) (string, error) {
-	ref, err := name.ParseReference(sourceImageRef, name.WithDefaultRegistry(""))
+	ref, err := name.ParseReference(sourceImageRef, name.WithDefaultRegistry("docker.io"))
 	if err != nil {
 		return "", err
 	}
 
-	return fmt.Sprintf("%s/%s/%s", ghcrDomain, r.organization, ref.Context().Tag(tag)), nil
+	taggedRef := r.fixIndexDockerRegistry(ref.Context().Tag(tag).String())
+	return fmt.Sprintf("%s/%s/%s", ghcrDomain, r.organization, taggedRef), nil
 }
 
 // OriginalImageRef returns name of imageRef from which was the given imageRef built.
@@ -129,7 +138,7 @@ func (r *ghcrRegistry) OriginalImageRef(imageRef string) string {
 		return ""
 	}
 
-	baseRef, _ := name.ParseReference(imageRefWithoutPrefix, name.WithDefaultRegistry(""))
+	baseRef, _ := name.ParseReference(imageRefWithoutPrefix, name.WithDefaultRegistry("docker.io"))
 	baseTag := ParseBaseTag(baseRef.Identifier())
 
 	return baseRef.Context().Tag(baseTag).String()

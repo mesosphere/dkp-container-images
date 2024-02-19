@@ -7,7 +7,7 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func TestRegistryOriginalImageRef(t *testing.T) {
+func TestRegistry_OriginalImageRef(t *testing.T) {
 	registry := NewGHCR("d2iq-labs")
 
 	testCases := []struct {
@@ -31,9 +31,16 @@ func TestRegistryOriginalImageRef(t *testing.T) {
 	}
 }
 
-func TestRegistryListTags(t *testing.T) {
+func TestRegistry_ListTags(t *testing.T) {
 	r := NewGHCR("d2iq-labs")
 	tags, err := r.ListTags(context.Background(), "registry.k8s.io/sig-storage/local-volume-provisioner:v2.5.0")
 	assert.ErrorIs(t, err, ErrImageNotFound)
 	assert.Empty(t, tags)
+}
+
+func TestRegistry_ImageRef(t *testing.T) {
+	r := NewGHCR("d2iq-labs")
+	imageRef, err := r.ImageRef("docker.io/alpine/alpine", "v1-d2iq.0")
+	assert.NoError(t, err)
+	assert.Equal(t, "ghcr.io/d2iq-labs/docker.io/alpine/alpine:v1-d2iq.0", imageRef)
 }
