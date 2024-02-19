@@ -91,6 +91,16 @@ func Run(ctx context.Context, imageRef string, reg registry.Registry, imageTagSu
 	patchedRef := imagePatch.SourceRef().Context().Tag(buildTag)
 	logger.Info("regenerated image using copa", "patchedRef", patchedRef.String())
 
+	patchedReport, err := image.Scan(ctx, patchedRef.String())
+	if err != nil {
+		return withErr(t, err), err
+	}
+	logger.Info(
+		"patched vulnerability report",
+		"original", report.Vulnerabilities(),
+		"patched", patchedReport.Vulnerabilities(),
+	)
+
 	// Add labels to the newly built image
 	labels := map[string]string{
 		"com.d2iq.source-image": imagePatch.Source,
