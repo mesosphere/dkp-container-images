@@ -3,7 +3,9 @@ package patch
 import (
 	"encoding/json"
 	"errors"
+	"fmt"
 	"io"
+	"strings"
 
 	md "github.com/go-spectest/markdown"
 
@@ -56,7 +58,7 @@ func WriteMarkdown(report Report, w io.Writer) error {
 		}
 		for i := range mdRow {
 			if len(mdRow[i]) > 0 {
-				mdRow[i] = md.Code(mdRow[i])
+				mdRow[i] = codeForTable(mdRow[i])
 			}
 		}
 		imagesTable.Rows = append(imagesTable.Rows, mdRow)
@@ -64,4 +66,8 @@ func WriteMarkdown(report Report, w io.Writer) error {
 
 	doc.H2("Patched images").PlainText("").Table(imagesTable)
 	return doc.Build()
+}
+
+func codeForTable(s string) string {
+	return fmt.Sprintf("<pre>%s</pre>", strings.ReplaceAll(s, "\n", "<br/>"))
 }
