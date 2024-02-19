@@ -4,8 +4,10 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
+	"fmt"
 	"os"
 	"os/exec"
+	"slices"
 
 	"github.com/aquasecurity/trivy/pkg/types"
 )
@@ -28,6 +30,16 @@ func (r *Report) Vulnerabilities() []types.DetectedVulnerability {
 		vulnerabilities = append(vulnerabilities, resultClass.Vulnerabilities...)
 	}
 	return vulnerabilities
+}
+
+func VulnerabilitiesIdsSorted(vulns []types.DetectedVulnerability) []string {
+	result := []string{}
+	for _, v := range vulns {
+		id := fmt.Sprintf("%s-%s-%s", v.VulnerabilityID, v.PkgName, v.InstalledVersion)
+		result = append(result, id)
+	}
+	slices.Sort(result)
+	return result
 }
 
 type CmdErr struct {

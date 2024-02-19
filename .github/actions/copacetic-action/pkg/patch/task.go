@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"log/slog"
 	"os"
-	"reflect"
+	"slices"
 
 	"github.com/google/go-containerregistry/pkg/name"
 	"go.step.sm/crypto/randutil"
@@ -105,8 +105,16 @@ func Run(ctx context.Context, imageRef string, reg registry.Registry, imageTagSu
 		"original", report.Vulnerabilities(),
 		"patched", patchedReport.Vulnerabilities(),
 	)
-	if reflect.DeepEqual(report.Vulnerabilities(), patchedReport.Vulnerabilities()) {
-		logger.Warn("no vulnerabilties were fixed by running copa", "scannedImage", imagePatch.Scanned)
+
+	if slices.Equal(
+		image.VulnerabilitiesIdsSorted(report.Vulnerabilities()),
+		image.VulnerabilitiesIdsSorted(patchedReport.Vulnerabilities()),
+	) {
+		logger.Warn("no vulnerabilties were fixed by running copa",
+			"scannedImage", imagePatch.Scanned,
+			"scanned", image.VulnerabilitiesIdsSorted(report.Vulnerabilities()),
+			"patched", image.VulnerabilitiesIdsSorted(patchedReport.Vulnerabilities()),
+		)
 		return t, nil
 	}
 
