@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log/slog"
 	"os"
+	"reflect"
 
 	"github.com/google/go-containerregistry/pkg/name"
 	"go.step.sm/crypto/randutil"
@@ -59,7 +60,11 @@ func Run(ctx context.Context, imageRef string, reg registry.Registry, imageTagSu
 		return t, nil
 	}
 
-	logger.Info("found patchable vulnerabilities", "vulnerabilites", report.Vulnerabilities())
+	logger.Info(
+		"found patchable vulnerabilities",
+		"scanned", imagePatch.Scanned,
+		"vulnerabilites", report.Vulnerabilities(),
+	)
 
 	buildId, err := randutil.Alphanumeric(5)
 	logger.Info("generated unique buildId", "buildId", buildId)
@@ -100,6 +105,10 @@ func Run(ctx context.Context, imageRef string, reg registry.Registry, imageTagSu
 		"original", report.Vulnerabilities(),
 		"patched", patchedReport.Vulnerabilities(),
 	)
+	if reflect.DeepEqual(report.Vulnerabilities(), patchedReport.Vulnerabilities()) {
+		logger.Warn("no vulnerabilties were fixed by running copa", "scannedImage", imagePatch.Scanned)
+		return t, nil
+	}
 
 	// Add labels to the newly built image
 	labels := map[string]string{
