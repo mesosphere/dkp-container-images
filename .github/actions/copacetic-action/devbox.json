@@ -1,0 +1,16 @@
+{
+  "packages": [
+    "trivy@latest",
+    "path:./hack/flakes#copacetic",
+    "go@latest",
+    "docker@latest",
+    "docker-buildx@latest",
+  ],
+  "shell": {
+    "scripts": {
+      "test": [
+        "echo \"Error: no test specified\" && exit 1",
+      ],
+    },
+  },
+}

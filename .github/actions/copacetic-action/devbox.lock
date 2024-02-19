@@ -1,0 +1,85 @@
+{
+  "lockfile_version": "1",
+  "packages": {
+    "docker-buildx@latest": {
+      "last_modified": "2024-01-29T00:15:04Z",
+      "resolved": "github:NixOS/nixpkgs/90f456026d284c22b3e3497be980b2e47d0b28ac#docker-buildx",
+      "source": "devbox-search",
+      "version": "0.12.1",
+      "systems": {
+        "aarch64-darwin": {
+          "store_path": "/nix/store/qa5b39af6fpywkh2gxny08kh6ra39lhq-docker-buildx-0.12.1"
+        },
+        "aarch64-linux": {
+          "store_path": "/nix/store/z7mw5d6fkdbzl3140ay1yp4fwrrifdgy-docker-buildx-0.12.1"
+        },
+        "x86_64-darwin": {
+          "store_path": "/nix/store/w1r0zbxswmh7fg8k3cdf9y7gc3gxam1i-docker-buildx-0.12.1"
+        },
+        "x86_64-linux": {
+          "store_path": "/nix/store/g921mfcvdyl59mkv96nq2jd7znl9yi1r-docker-buildx-0.12.1"
+        }
+      }
+    },
+    "docker@latest": {
+      "last_modified": "2024-01-30T04:45:19Z",
+      "resolved": "github:NixOS/nixpkgs/222c1940fafeda4dea161858ffe6ebfc853d3db5#docker",
+      "source": "devbox-search",
+      "version": "24.0.5",
+      "systems": {
+        "aarch64-darwin": {
+          "store_path": "/nix/store/b1wvdq94zxwkpjsxdzhm9hf9igb83siz-docker-24.0.5"
+        },
+        "aarch64-linux": {
+          "store_path": "/nix/store/h10712wm42kns4wjy78qg0ycmw3v8hai-docker-24.0.5"
+        },
+        "x86_64-darwin": {
+          "store_path": "/nix/store/16wz1cd6kz75rs0fnhihaqn1c7a5l8fy-docker-24.0.5"
+        },
+        "x86_64-linux": {
+          "store_path": "/nix/store/kahw87dwsj3m4czp636a58791qrpnj25-docker-24.0.5"
+        }
+      }
+    },
+    "go@latest": {
+      "last_modified": "2024-01-27T14:55:31Z",
+      "resolved": "github:NixOS/nixpkgs/160b762eda6d139ac10ae081f8f78d640dd523eb#go",
+      "source": "devbox-search",
+      "version": "1.21.6",
+      "systems": {
+        "aarch64-darwin": {
+          "store_path": "/nix/store/8m3wjb23sfbjpjsj4l82b4zh9xnw62hh-go-1.21.6"
+        },
+        "aarch64-linux": {
+          "store_path": "/nix/store/ia1z2slwgdgibad4z42rpd1dib7gk999-go-1.21.6"
+        },
+        "x86_64-darwin": {
+          "store_path": "/nix/store/dm4s4dfrah5zhl6larnrbh07v76j4pgy-go-1.21.6"
+        },
+        "x86_64-linux": {
+          "store_path": "/nix/store/cw9dqybf9w6wp7827h23pb3ym8gs8h47-go-1.21.6"
+        }
+      }
+    },
+    "trivy@latest": {
+      "last_modified": "2024-01-27T14:55:31Z",
+      "resolved": "github:NixOS/nixpkgs/160b762eda6d139ac10ae081f8f78d640dd523eb#trivy",
+      "source": "devbox-search",
+      "version": "0.48.3",
+      "systems": {
+        "aarch64-darwin": {
+          "store_path": "/nix/store/jcz6japkpm081wvqx8sa11nihb17ladq-trivy-0.48.3"
+        },
+        "aarch64-linux": {
+          "store_path": "/nix/store/sar0a567lz1v04yq90clrlrjbj1i4w3y-trivy-0.48.3"
+        },
+        "x86_64-darwin": {
+          "store_path": "/nix/store/pm5vh07v1pyr14dkzvj056si91mlp8rp-trivy-0.48.3"
+        },
+        "x86_64-linux": {
+          "store_path": "/nix/store/pkp2km72f2nhv0b5w6gfc9si49dhd3r4-trivy-0.48.3"
+        }
+      }
+    }
+  }
+}

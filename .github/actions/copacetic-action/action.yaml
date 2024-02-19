@@ -1,0 +1,96 @@
+name: Patch images
+description: 'Run copacetic patch on provided list of images and publish those to given container registry'
+inputs:
+  github-token:
+    description: 'Github token'
+    required: true
+    type: string
+  images:
+    description: 'List of images to process separated by newline'
+    required: true
+    type: string
+  # buildkit-version:
+  #   description: 'Buildkit version'
+  #   type: string
+  skip-upload:
+    description: 'Skip uploading to remote registry'
+    default: false
+    required: false
+    type: boolean
+  debug:
+    description: 'Enable additional output'
+    default: false
+    required: false
+    type: boolean
+  timeout:
+    description: 'Run timeout (default 1h)'
+    default: 1h
+    required: false
+    type: string
+outputs:
+  result:
+    description: "Patching result"
+    value: ${{ steps.execute-patch.outputs.result }}
+  markdown:
+    description: "Markdown report"
+    value: ${{ steps.generate-md-report.outputs.report }}
+runs:
+  using: composite
+  steps:
+
+    - uses: cachix/install-nix-action@v25
+      with:
+        github_access_token: ${{ inputs.github-token }}
+
+    - name: Install devbox
+      uses: jetpack-io/devbox-install-action@v0.8.0
+      with:
+        # TODO(mh): Cache restore fails due to tar permission errors
+        enable-cache: false
+        skip-nix-installation: true
+        project-path: ${{ github.action_path }}
+
+    - name: docker create builder
+      working-directory: ${{ github.action_path }}
+      shell: bash
+      run: |
+        devbox run -- docker buildx create --name copacetic-action
+
+    - name: run patching
+      id: execute-patch
+      working-directory: ${{ github.action_path }}
+      shell: bash
+      run: |
+        IMAGES_PATH=$(mktemp)
+        echo "$IMAGES" > $IMAGES_PATH
+        RESULT="$(devbox run -- go run main.go patch $IMAGES_PATH \
+          --skip-upload=${{ inputs.skip-upload }} \
+          --debug=${{ inputs.debug }} \
+          --timeout=${{ inputs.timeout }})"
+        echo "result=$RESULT" >> $GITHUB_OUTPUT
+      env:
+        IMAGES: ${{ inputs.images }}
+        GCO_ENABLED: "0"
+        GOWORK: "off"
+        BUILDX_BUILDER: "copacetic-action"
+
+    - name: generate-md-report
+      id: generate-md-report
+      working-directory: ${{ github.action_path }}
+      shell: bash
+      run: |
+        JSON_REPORT_PATH=$(mktemp)
+        echo "$JSON_REPORT" > $JSON_REPORT_PATH
+        RESULT="$(devbox run -- go run main.go markdown $JSON_REPORT_PATH)"
+        echo "$RESULT" >> $GITHUB_STEP_SUMMARY
+      env:
+        JSON_REPORT: ${{ steps.execute-patch.outputs.result }}
+        GOWORK: "off"
+
+    - name: cleanup builder
+      working-directory: ${{ github.action_path }}
+      shell: bash
+      if: always()
+      run: |
+        devbox run -- docker buildx rm copacetic-action
+
