@@ -39,7 +39,7 @@ func AddLabels(ctx context.Context, patchedRef name.Reference, labels map[string
 }
 
 func PatchCVEs(ctx context.Context, imageRef, buildTag, tmpDir string) error {
-	report, err := Scan(ctx, imageRef)
+	report, err := Scan(ctx, imageRef, ScanFixableOS)
 	if err != nil {
 		return err
 	}

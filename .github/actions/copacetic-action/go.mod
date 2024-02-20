@@ -4,7 +4,9 @@ go 1.21.5
 
 require (
 	github.com/aquasecurity/trivy v0.48.3
+	github.com/go-spectest/markdown v0.0.7
 	github.com/google/go-containerregistry v0.19.0
+	github.com/goware/prefixer v0.0.0-20160118172347-395022866408
 	github.com/spf13/cobra v1.8.0
 	github.com/stretchr/testify v1.8.4
 	go.step.sm/crypto v0.42.1
@@ -22,9 +24,7 @@ require (
 	github.com/docker/docker-credential-helpers v0.7.0 // indirect
 	github.com/docker/go-connections v0.4.0 // indirect
 	github.com/docker/go-units v0.5.0 // indirect
-	github.com/go-spectest/markdown v0.0.7 // indirect
 	github.com/gogo/protobuf v1.3.2 // indirect
-	github.com/goware/prefixer v0.0.0-20160118172347-395022866408 // indirect
 	github.com/inconshreveable/mousetrap v1.1.0 // indirect
 	github.com/karrick/godirwalk v1.17.0 // indirect
 	github.com/klauspost/compress v1.16.6 // indirect
