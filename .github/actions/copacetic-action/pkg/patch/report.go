@@ -61,8 +61,8 @@ func WriteMarkdown(ctx context.Context, report Report, w io.Writer, printCVEs bo
 		}
 
 		if printCVEs {
-			mdRow[0] = fmt.Sprintf("%s<br/>%s", row.Image, scanImage(ctx, row.Image))
-			mdRow[1] = fmt.Sprintf("%s<br/>%s", row.Patched, scanImage(ctx, row.Patched))
+			mdRow[0] = fmt.Sprintf("`%s`<br>%s", row.Image, scanImage(ctx, row.Image))
+			mdRow[1] = fmt.Sprintf("`%s`<br>%s", row.Patched, scanImage(ctx, row.Patched))
 		}
 
 		if row.Error != "" {
