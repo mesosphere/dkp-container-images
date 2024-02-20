@@ -53,10 +53,17 @@ func (e *CmdErr) Error() string {
 	return e.Err.Error()
 }
 
+var (
+	ScanFixableOS = []string{"--vuln-type", "os", "--ignore-unfixed"}
+	ScanAllOS     = []string{"--vuln-type", "os"}
+)
+
 // Scan runs a trivy scan of a image and returns back report.
-func Scan(ctx context.Context, imageName string) (*Report, error) {
+func Scan(ctx context.Context, imageName string, scanType []string) (*Report, error) {
+	flags := append([]string{"image"}, scanType...)
+	flags = append(flags, "--format", "json", imageName)
 	cmd, stdout, stderr := prepareCmd(
-		ctx, "trivy", "image", "--vuln-type", "os", "--ignore-unfixed", "--format", "json", imageName,
+		ctx, "trivy", flags...,
 	)
 	err := cmd.Run()
 	if err != nil {

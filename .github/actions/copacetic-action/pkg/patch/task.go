@@ -50,7 +50,7 @@ func Run(ctx context.Context, imageRef string, reg registry.Registry, imageTagSu
 	// To avoid generating same patched image always scan the latest patched
 	// tag in the patch registry and only build image if there are available
 	// fixes that would change the latest patched version.
-	report, err := image.Scan(ctx, imagePatch.Scanned)
+	report, err := image.Scan(ctx, imagePatch.Scanned, image.ScanFixableOS)
 	if err != nil {
 		return withErr(t, err), err
 	}
@@ -96,21 +96,17 @@ func Run(ctx context.Context, imageRef string, reg registry.Registry, imageTagSu
 	patchedRef := imagePatch.SourceRef().Context().Tag(buildTag)
 	logger.Info("regenerated image using copa", "patchedRef", patchedRef.String())
 
-	patchedReport, err := image.Scan(ctx, patchedRef.String())
+	patchedReport, err := image.Scan(ctx, patchedRef.String(), image.ScanFixableOS)
 	if err != nil {
 		return withErr(t, err), err
 	}
-	logger.Info(
-		"patched vulnerability report",
-		"original", report.Vulnerabilities(),
-		"patched", patchedReport.Vulnerabilities(),
-	)
 
 	if slices.Equal(
 		image.VulnerabilitiesIdsSorted(report.Vulnerabilities()),
 		image.VulnerabilitiesIdsSorted(patchedReport.Vulnerabilities()),
 	) {
-		logger.Warn("no vulnerabilties were fixed by running copa",
+		logger.Warn(
+			"no vulnerabilties were fixed by running copa patch",
 			"scannedImage", imagePatch.Scanned,
 			"scanned", image.VulnerabilitiesIdsSorted(report.Vulnerabilities()),
 			"patched", image.VulnerabilitiesIdsSorted(patchedReport.Vulnerabilities()),

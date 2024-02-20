@@ -9,9 +9,6 @@ inputs:
     description: 'List of images to process separated by newline'
     required: true
     type: string
-  # buildkit-version:
-  #   description: 'Buildkit version'
-  #   type: string
   skip-upload:
     description: 'Skip uploading to remote registry'
     default: false
@@ -27,6 +24,11 @@ inputs:
     default: 1h
     required: false
     type: string
+  report-cves:
+    description: 'Scan and report number of Critical and Highs'
+    default: false
+    required: false
+    type: boolean
 outputs:
   result:
     description: "Patching result"
@@ -83,7 +85,7 @@ runs:
       run: |
         JSON_REPORT_PATH=$(mktemp)
         echo "$JSON_REPORT" > $JSON_REPORT_PATH
-        RESULT="$(devbox run -- go run main.go markdown $JSON_REPORT_PATH)"
+        RESULT="$(devbox run -- go run main.go markdown $JSON_REPORT_PATH) --print-cves=${{ inputs.report-cves }}"
         echo "$RESULT" >> $GITHUB_STEP_SUMMARY
       env:
         JSON_REPORT: ${{ steps.execute-patch.outputs.result }}

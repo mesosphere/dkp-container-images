@@ -1,6 +1,7 @@
 package patch
 
 import (
+	"context"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -44,7 +45,7 @@ func WriteJSON(tasks []*Task, w io.Writer) error {
 	return json.NewEncoder(w).Encode(r)
 }
 
-func WriteMarkdown(report Report, w io.Writer) error {
+func WriteMarkdown(ctx context.Context, report Report, w io.Writer, printCVEs bool) error {
 	doc := md.NewMarkdown(w)
 
 	imagesTable := md.TableSet{
@@ -57,6 +58,11 @@ func WriteMarkdown(report Report, w io.Writer) error {
 		mdRow := []string{
 			md.Code(row.Image),
 			md.Code(row.Patched),
+		}
+
+		if printCVEs {
+			mdRow[0] = fmt.Sprintf("%s<br/>%s", row.Image, scanImage(ctx, row.Image))
+			mdRow[1] = fmt.Sprintf("%s<br/>%s", row.Patched, scanImage(ctx, row.Patched))
 		}
 
 		if row.Error != "" {
@@ -95,4 +101,27 @@ func WriteMarkdown(report Report, w io.Writer) error {
 	}
 
 	return doc.Build()
+}
+
+func scanImage(ctx context.Context, imageRef string) string {
+	report, err := image.Scan(ctx, imageRef, image.ScanAllOS)
+	if err != nil {
+		return md.Code(err.Error())
+	}
+
+	counts := map[string]int{
+		"CRITICAL": 0,
+		"HIGH":     0,
+	}
+	for _, vuln := range report.Vulnerabilities() {
+		if _, ok := counts[vuln.Severity]; ok {
+			counts[vuln.Severity] = counts[vuln.Severity] + 1
+		}
+	}
+
+	parts := []string{}
+	for severity, count := range counts {
+		parts = append(parts, fmt.Sprintf("`%d` %s", count, md.Bold(severity)))
+	}
+	return strings.Join(parts, " ")
 }

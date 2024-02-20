@@ -11,12 +11,14 @@ import (
 	"github.com/spf13/cobra"
 )
 
+var printCVEs = false
+
 func NewMarkdownCmd() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "markdown PATH | -",
 		Short: "Generate markdown report from JSON output",
 		Args:  cobra.ExactArgs(1),
-		RunE: func(_ *cobra.Command, args []string) error {
+		RunE: func(cmd *cobra.Command, args []string) error {
 			input, err := cli.OpenFileOrStdin(args[0])
 			if err != nil {
 				return err
@@ -31,8 +33,9 @@ func NewMarkdownCmd() *cobra.Command {
 				return fmt.Errorf("failed to read JSON report: %w", err)
 			}
 
-			return patch.WriteMarkdown(report, os.Stdout)
+			return patch.WriteMarkdown(cmd.Context(), report, os.Stdout, printCVEs)
 		},
 	}
+	cmd.Flags().BoolVar(&printCVEs, "print-cves", printCVEs, "enable scanning and printing number of Critical and High CVEs")
 	return cmd
 }
