@@ -33,7 +33,8 @@ func NewMarkdownCmd() *cobra.Command {
 				return fmt.Errorf("failed to read JSON report: %w", err)
 			}
 
-			return patch.WriteMarkdown(cmd.Context(), report, os.Stdout, printCVEs)
+			w := io.MultiWriter(os.Stdout, os.Stderr)
+			return patch.WriteMarkdown(cmd.Context(), report, w, printCVEs)
 		},
 	}
 	cmd.Flags().BoolVar(&printCVEs, "print-cves", printCVEs, "enable scanning and printing number of Critical and High CVEs")
