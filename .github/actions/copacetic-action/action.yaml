@@ -85,7 +85,7 @@ runs:
       run: |
         JSON_REPORT_PATH=$(mktemp)
         echo "$JSON_REPORT" > $JSON_REPORT_PATH
-        RESULT="$(devbox run -- go run main.go markdown $JSON_REPORT_PATH) --print-cves=${{ inputs.report-cves }}"
+        RESULT="$(devbox run -- go run main.go markdown $JSON_REPORT_PATH --print-cves=${{ inputs.report-cves }})"
         echo "$RESULT" >> $GITHUB_STEP_SUMMARY
       env:
         JSON_REPORT: ${{ steps.execute-patch.outputs.result }}
