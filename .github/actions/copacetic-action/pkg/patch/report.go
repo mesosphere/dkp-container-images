@@ -61,12 +61,12 @@ func WriteMarkdown(ctx context.Context, report Report, w io.Writer, printCVEs bo
 		}
 
 		if printCVEs {
-			mdRow[0] = fmt.Sprintf("`%s`<br>%s", row.Image, scanImage(ctx, row.Image))
-			mdRow[1] = fmt.Sprintf("`%s`<br>%s", row.Patched, scanImage(ctx, row.Patched))
+			mdRow[0] = fmt.Sprintf("<code>%s<code><br>%s", row.Image, scanImage(ctx, row.Image))
+			mdRow[1] = fmt.Sprintf("<code>%s<code><br>%s", row.Patched, scanImage(ctx, row.Patched))
 		}
 
 		if row.Error != "" {
-			mdRow = append(mdRow, md.Link("View error", fmt.Sprintf("#error-%d", i)))
+			mdRow = append(mdRow, fmt.Sprintf(`<a href="#error-%d">View error</a>`, i))
 
 			detailsRow := []string{
 				row.Image,
@@ -86,7 +86,7 @@ func WriteMarkdown(ctx context.Context, report Report, w io.Writer, printCVEs bo
 		imagesTable.Rows = append(imagesTable.Rows, mdRow)
 	}
 
-	doc.H2("Patched images").LF().Table(imagesTable)
+	doc.H2("Patched images").LF().PlainText(renderHtmlTable(imagesTable))
 
 	if len(errorDetails) > 0 {
 		doc.H2("Errors")
@@ -101,6 +101,23 @@ func WriteMarkdown(ctx context.Context, report Report, w io.Writer, printCVEs bo
 	}
 
 	return doc.Build()
+}
+
+func renderHtmlTable(t md.TableSet) string {
+	result := "<table><thead><tr>%s</tr></thead><tbody>%s</tbody></table>"
+	header := []string{}
+	for _, cell := range t.Header {
+		header = append(header, fmt.Sprintf("<th>%s</th>", cell))
+	}
+	rows := []string{}
+	for _, row := range t.Rows {
+		rowHtml := ""
+		for _, cell := range row {
+			rowHtml += fmt.Sprintf("<td>%s</td>", cell)
+		}
+		rows = append(rows, rowHtml)
+	}
+	return fmt.Sprintf(result, strings.Join(header, ""), strings.Join(rows, ""))
 }
 
 func scanImage(ctx context.Context, imageRef string) string {
@@ -121,7 +138,7 @@ func scanImage(ctx context.Context, imageRef string) string {
 
 	parts := []string{}
 	for severity, count := range counts {
-		parts = append(parts, fmt.Sprintf("`%d` %s", count, md.Bold(severity)))
+		parts = append(parts, fmt.Sprintf("<code>%d<code> <b>%s</b>", count, severity))
 	}
 	return strings.Join(parts, " ")
 }
