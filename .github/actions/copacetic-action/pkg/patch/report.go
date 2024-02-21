@@ -138,7 +138,7 @@ func scanImage(ctx context.Context, imageRef string) string {
 
 	parts := []string{}
 	for severity, count := range counts {
-		parts = append(parts, fmt.Sprintf("<code>%d<code> <b>%s</b>", count, severity))
+		parts = append(parts, fmt.Sprintf("<code>%d</code> <b>%s</b>", count, severity))
 	}
 	return strings.Join(parts, " ")
 }
