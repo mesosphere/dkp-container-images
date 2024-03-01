@@ -61,7 +61,7 @@ jobs:
           } >> "$GITHUB_OUTPUT"
 
           export $(echo "$BUILD_ARGS" | xargs)
-          echo "version=$TARGET_IMAGE_VERSION" >> "$GITHUB_OUTPUT"
+          echo "target_image=$TARGET_IMAGE" >> "$GITHUB_OUTPUT"
 
       - name: Build and push image
         id: build
@@ -72,5 +72,5 @@ jobs:
           build-args: ${{ steps.build-args.outputs.value }}
           push: ${{ inputs.push }}
           load: ${{ ! inputs.push }}
-          tags: ${{ steps.build-args.outputs.version }}
+          tags: ${{ steps.build-args.outputs.target_image }}
 
