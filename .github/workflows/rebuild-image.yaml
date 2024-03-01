@@ -1,0 +1,73 @@
+name: CVE patch
+
+on:
+  workflow_dispatch:
+    inputs:
+      directory:
+        description: 'Name of the directory for image - e.g. kube-oidc-proxy'
+        type: string
+        required: true
+      build-args:
+        description: 'Arguments for generating build args e.g. SOURCE_IMAGE_VERSION=1.0.6'
+        type: string
+        required: false
+      push:
+        description: 'Whether to push the image to GHCR'
+        type: bool
+        default: false
+
+permissions:
+  packages: write
+
+jobs:
+
+  build_image:
+
+    runs-on:
+      - self-hosted
+      - small
+
+    steps:
+
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Login to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKERHUB_READ_ONLY_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_READ_ONLY_PASSWORD }}
+
+      - name: Login to GHCR
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Gather build args
+        shell: bash
+        id: build-args
+        working-directory: ./${{ inputs.directory }}
+        run: |
+          BUILD_ARGS=$(make build-args ${{ inputs.make-args }})
+          {
+            echo 'value<<EOF'
+            echo "$BUILD_ARGS"
+            echo 'EOF'
+          } >> "$GITHUB_OUTPUT"
+
+          export $(echo "$BUILD_ARGS" | xargs)
+          echo "version=$TARGET_IMAGE_VERSION" >> "$GITHUB_OUTPUT"
+
+      - name: Build and push image
+        id: build
+        uses: docker/build-push-action@v5.1.0
+        with:
+          context: ./${{ inputs.directory }}
+          platforms: linux/amd64
+          build-args: ${{ steps.build-args.outputs.value }}
+          push: ${{ input.push }}
+          load: ${{ ! input.push }}
+          tags: ${{ steps.build-args.outputs.version }}
+
