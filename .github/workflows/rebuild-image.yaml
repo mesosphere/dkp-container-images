@@ -12,7 +12,7 @@ on:
         type: string
         required: false
       push:
-        description: 'Whether to push the image to GHCR'
+        description: 'Push the image to GHCR'
         type: boolean
         default: false
 
