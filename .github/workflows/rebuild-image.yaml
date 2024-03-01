@@ -67,7 +67,7 @@ jobs:
           context: ./${{ inputs.directory }}
           platforms: linux/amd64
           build-args: ${{ steps.build-args.outputs.value }}
-          push: ${{ input.push }}
-          load: ${{ ! input.push }}
+          push: ${{ inputs.push }}
+          load: ${{ ! inputs.push }}
           tags: ${{ steps.build-args.outputs.version }}
 
