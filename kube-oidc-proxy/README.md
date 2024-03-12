@@ -6,6 +6,8 @@ There is a [maintained fork](https://www.tremolosecurity.com/post/updating-kube-
 
 The forked image gets rebuilt by copying the fork build and adding it to static distroless container image to minimize attack surface.
 
+The CA certs bundle from the original distroless container image is copied to the `/etc/ssl/certs/certs-bundle.crt` that allows specific overrides.
+
 ## Build
 
 ```

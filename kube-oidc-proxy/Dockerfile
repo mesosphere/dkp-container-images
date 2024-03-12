@@ -7,9 +7,11 @@ ARG BASE_IMAGE
 
 FROM $SOURCE_IMAGE as source
 
+FROM ${BASE_IMAGE} as certs
+
 FROM ${BASE_IMAGE}
 
-# RUN apk --no-cache add ca-certificates && update-ca-certificates
+COPY --from=certs /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/certs-bundle.crt
 
 # See: https://github.com/TremoloSecurity/kube-oidc-proxy/blob/1acdbd93710e61117d6daf90f541f2107552d9e6/Dockerfile
 COPY --from=source /usr/bin/kube-oidc-proxy /usr/local/bin/kube-oidc-proxy
