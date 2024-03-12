@@ -53,7 +53,7 @@ jobs:
         id: build-args
         working-directory: ./${{ inputs.directory }}
         run: |
-          BUILD_ARGS=$(make build-args ${{ inputs.make-args }})
+          BUILD_ARGS=$(make build-args ${{ inputs.build-args }})
           {
             echo 'value<<EOF'
             echo "$BUILD_ARGS"
