@@ -1,0 +1,153 @@
+name: Build image from source
+
+on:
+  workflow_dispatch:
+    inputs:
+      source-repo:
+        description: 'Source repository to clone (e.g. opencost/opencost-ui)'
+        type: string
+        required: true
+      source-version:
+        description: 'Git tag/branch/commit to checkout (e.g. 1.117.5)'
+        type: string
+        required: true
+      dockerfile-path:
+        description: 'Path to Dockerfile relative to repo root (default: Dockerfile)'
+        type: string
+        default: 'Dockerfile'
+      build-context:
+        description: 'Build context path relative to repo root (default: .)'
+        type: string
+        default: '.'
+      build-args:
+        description: 'Build arguments in KEY=VALUE format, one per line'
+        type: string
+        required: false
+      target-image:
+        description: 'Target image name (e.g. ghcr.io/mesosphere/dkp-container-images/opencost/opencost-ui)'
+        type: string
+        required: true
+      target-tag:
+        description: 'Target image tag (default: uses source-version)'
+        type: string
+        required: false
+      platforms:
+        description: 'Comma separated list of platforms to build the image for'
+        type: string
+        default: linux/amd64
+      push:
+        description: 'Push the image to registry'
+        type: boolean
+        default: false
+
+permissions:
+  packages: write
+
+jobs:
+  build_from_source:
+    runs-on:
+      - self-hosted
+      - small
+
+    steps:
+      - name: Checkout source repository
+        uses: actions/checkout@v4
+        with:
+          repository: ${{ inputs.source-repo }}
+          ref: ${{ inputs.source-version }}
+          path: source-repo
+
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v3
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Login to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKERHUB_READ_ONLY_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_READ_ONLY_PASSWORD }}
+
+      - name: Login to GHCR
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Prepare build arguments
+        id: build-args
+        shell: bash
+        run: |
+          # Set default target tag if not provided
+          TARGET_TAG="${{ inputs.target-tag }}"
+          if [ -z "$TARGET_TAG" ]; then
+            TARGET_TAG="${{ inputs.source-version }}"
+          fi
+          
+          # Prepare build args
+          BUILD_ARGS=""
+          
+          # Extract build arguments from Makefile
+          echo "Extracting build arguments from Makefile..."
+          cd source-repo
+          # Get build args from Makefile, passing source-version as SOURCE_VERSION
+          MAKEFILE_BUILD_ARGS=$(make build-args SOURCE_VERSION="${{ inputs.source-version }}")
+          echo "Makefile build args: $MAKEFILE_BUILD_ARGS"
+          
+          # Convert Makefile output to newline format for docker/build-push-action
+          while IFS= read -r line; do
+            if [ -n "$line" ]; then
+              if [ -n "$BUILD_ARGS" ]; then
+                BUILD_ARGS="$BUILD_ARGS"$'\n'"$line"
+              else
+                BUILD_ARGS="$line"
+              fi
+            fi
+          done <<< "$MAKEFILE_BUILD_ARGS"
+          cd ..
+          
+          # Add any additional build args from workflow input
+          if [ -n "${{ inputs.build-args }}" ]; then
+            # Convert multi-line build-args to newline format for docker/build-push-action
+            while IFS= read -r line; do
+              if [ -n "$line" ]; then
+                if [ -n "$BUILD_ARGS" ]; then
+                  BUILD_ARGS="$BUILD_ARGS"$'\n'"$line"
+                else
+                  BUILD_ARGS="$line"
+                fi
+              fi
+            done <<< "${{ inputs.build-args }}"
+          fi
+          
+          echo "target-tag=$TARGET_TAG" >> "$GITHUB_OUTPUT"
+          echo "build-args=$BUILD_ARGS" >> "$GITHUB_OUTPUT"
+          echo "full-image-name=${{ inputs.target-image }}:$TARGET_TAG" >> "$GITHUB_OUTPUT"
+
+      - name: Build and push image
+        id: build
+        uses: docker/build-push-action@v5.1.0
+        with:
+          context: source-repo/${{ inputs.build-context }}
+          file: source-repo/${{ inputs.dockerfile-path }}
+          platforms: ${{ inputs.platforms }}
+          build-args: |
+            SOURCE_VERSION=${{ inputs.source-version }}
+            ${{ steps.build-args.outputs.build-args }}
+          push: ${{ inputs.push }}
+          load: ${{ ! inputs.push }}
+          tags: ${{ steps.build-args.outputs.full-image-name }}
+
+      - name: Output image details
+        shell: bash
+        run: |
+          echo "Built image: ${{ steps.build-args.outputs.full-image-name }}"
+          echo "Source: ${{ inputs.source-repo }}@${{ inputs.source-version }}"
+          echo "Platforms: ${{ inputs.platforms }}"
+          if [ "${{ inputs.push }}" = "true" ]; then
+            echo "Image pushed to registry"
+          else
+            echo "Image built locally (not pushed)"
+          fi
