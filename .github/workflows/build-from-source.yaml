@@ -8,27 +8,11 @@ on:
         type: string
         required: true
       source-version:
-        description: 'Git tag/branch/commit to checkout (e.g. 1.117.5)'
+        description: 'Git tag/branch/commit to checkout (e.g. v1.117.5)'
         type: string
         required: true
-      dockerfile-path:
-        description: 'Path to Dockerfile relative to repo root (default: Dockerfile)'
-        type: string
-        default: 'Dockerfile'
-      build-context:
-        description: 'Build context path relative to repo root (default: .)'
-        type: string
-        default: '.'
       build-args:
         description: 'Build arguments in KEY=VALUE format, one per line'
-        type: string
-        required: false
-      target-image:
-        description: 'Target image name (e.g. ghcr.io/mesosphere/dkp-container-images/opencost/opencost-ui)'
-        type: string
-        required: true
-      target-tag:
-        description: 'Target image tag (default: uses source-version)'
         type: string
         required: false
       platforms:
@@ -48,8 +32,12 @@ jobs:
     runs-on:
       - self-hosted
       - small
-
     steps:
+      - name: Checkout automation repo
+        uses: actions/checkout@v4
+        with:
+          path: automation-repo/${{ inputs.source-repo }}
+
       - name: Checkout source repository
         uses: actions/checkout@v4
         with:
@@ -76,78 +64,29 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Prepare build arguments
-        id: build-args
+      - name: Gather build args
         shell: bash
+        id: build-args
+        working-directory: ./automation-repo/${{ inputs.source-repo }}
         run: |
-          # Set default target tag if not provided
-          TARGET_TAG="${{ inputs.target-tag }}"
-          if [ -z "$TARGET_TAG" ]; then
-            TARGET_TAG="${{ inputs.source-version }}"
-          fi
-          
-          # Prepare build args
-          BUILD_ARGS=""
-          
-          # Extract build arguments from Makefile
-          echo "Extracting build arguments from Makefile..."
-          cd source-repo
-          # Get build args from Makefile, passing source-version as SOURCE_VERSION
-          MAKEFILE_BUILD_ARGS=$(make build-args SOURCE_VERSION="${{ inputs.source-version }}")
-          echo "Makefile build args: $MAKEFILE_BUILD_ARGS"
-          
-          # Convert Makefile output to newline format for docker/build-push-action
-          while IFS= read -r line; do
-            if [ -n "$line" ]; then
-              if [ -n "$BUILD_ARGS" ]; then
-                BUILD_ARGS="$BUILD_ARGS"$'\n'"$line"
-              else
-                BUILD_ARGS="$line"
-              fi
-            fi
-          done <<< "$MAKEFILE_BUILD_ARGS"
-          cd ..
-          
-          # Add any additional build args from workflow input
-          if [ -n "${{ inputs.build-args }}" ]; then
-            # Convert multi-line build-args to newline format for docker/build-push-action
-            while IFS= read -r line; do
-              if [ -n "$line" ]; then
-                if [ -n "$BUILD_ARGS" ]; then
-                  BUILD_ARGS="$BUILD_ARGS"$'\n'"$line"
-                else
-                  BUILD_ARGS="$line"
-                fi
-              fi
-            done <<< "${{ inputs.build-args }}"
-          fi
-          
-          echo "target-tag=$TARGET_TAG" >> "$GITHUB_OUTPUT"
-          echo "build-args=$BUILD_ARGS" >> "$GITHUB_OUTPUT"
-          echo "full-image-name=${{ inputs.target-image }}:$TARGET_TAG" >> "$GITHUB_OUTPUT"
+            BUILD_ARGS=$(SOURCE_VERSION=${{ inputs.source-version }} make build-args ${{ inputs.build-args }})
+            {
+              echo 'value<<EOF'
+              echo "$BUILD_ARGS"
+              echo 'EOF'
+            } >> "$GITHUB_OUTPUT"
+  
+            export $(echo "$BUILD_ARGS" | xargs)
+            echo "target_image=$TARGET_IMAGE" >> "$GITHUB_OUTPUT"
 
       - name: Build and push image
         id: build
         uses: docker/build-push-action@v5.1.0
         with:
-          context: source-repo/${{ inputs.build-context }}
-          file: source-repo/${{ inputs.dockerfile-path }}
+          context: source-repo/
           platforms: ${{ inputs.platforms }}
           build-args: |
-            SOURCE_VERSION=${{ inputs.source-version }}
             ${{ steps.build-args.outputs.build-args }}
           push: ${{ inputs.push }}
           load: ${{ ! inputs.push }}
-          tags: ${{ steps.build-args.outputs.full-image-name }}
-
-      - name: Output image details
-        shell: bash
-        run: |
-          echo "Built image: ${{ steps.build-args.outputs.full-image-name }}"
-          echo "Source: ${{ inputs.source-repo }}@${{ inputs.source-version }}"
-          echo "Platforms: ${{ inputs.platforms }}"
-          if [ "${{ inputs.push }}" = "true" ]; then
-            echo "Image pushed to registry"
-          else
-            echo "Image built locally (not pushed)"
-          fi
+          tags: ${{ steps.build-args.outputs.target_image }}
