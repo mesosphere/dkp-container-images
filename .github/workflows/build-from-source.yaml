@@ -1,0 +1,92 @@
+name: Build image from source
+
+on:
+  workflow_dispatch:
+    inputs:
+      source-repo:
+        description: 'Source repository to clone (e.g. opencost/opencost-ui)'
+        type: string
+        required: true
+      source-version:
+        description: 'Git tag/branch/commit to checkout (e.g. v1.117.5)'
+        type: string
+        required: true
+      build-args:
+        description: 'Build arguments in KEY=VALUE format, one per line'
+        type: string
+        required: false
+      platforms:
+        description: 'Comma separated list of platforms to build the image for'
+        type: string
+        default: linux/amd64
+      push:
+        description: 'Push the image to registry'
+        type: boolean
+        default: false
+
+permissions:
+  packages: write
+
+jobs:
+  build_from_source:
+    runs-on:
+      - self-hosted
+      - small
+    steps:
+      - name: Checkout automation repo
+        uses: actions/checkout@v4
+        with:
+          path: automation-repo/${{ inputs.source-repo }}
+
+      - name: Checkout source repository
+        uses: actions/checkout@v4
+        with:
+          repository: ${{ inputs.source-repo }}
+          ref: ${{ inputs.source-version }}
+          path: source-repo
+
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v3
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Login to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKERHUB_READ_ONLY_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_READ_ONLY_PASSWORD }}
+
+      - name: Login to GHCR
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Gather build args
+        shell: bash
+        id: build-args
+        working-directory: ./automation-repo/${{ inputs.source-repo }}
+        run: |
+            BUILD_ARGS=$(SOURCE_VERSION=${{ inputs.source-version }} make build-args ${{ inputs.build-args }})
+            {
+              echo 'value<<EOF'
+              echo "$BUILD_ARGS"
+              echo 'EOF'
+            } >> "$GITHUB_OUTPUT"
+  
+            export $(echo "$BUILD_ARGS" | xargs)
+            echo "target_image=$TARGET_IMAGE" >> "$GITHUB_OUTPUT"
+
+      - name: Build and push image
+        id: build
+        uses: docker/build-push-action@v5.1.0
+        with:
+          context: source-repo/
+          platforms: ${{ inputs.platforms }}
+          build-args: |
+            ${{ steps.build-args.outputs.build-args }}
+          push: ${{ inputs.push }}
+          load: ${{ ! inputs.push }}
+          tags: ${{ steps.build-args.outputs.target_image }}
