@@ -36,7 +36,7 @@ jobs:
       - name: Checkout automation repo
         uses: actions/checkout@v4
         with:
-          path: automation-repo/${{ inputs.source-repo }}
+          path: automation-repo
 
       - name: Checkout source repository
         uses: actions/checkout@v4
@@ -75,8 +75,8 @@ jobs:
               echo "$BUILD_ARGS"
               echo 'EOF'
             } >> "$GITHUB_OUTPUT"
-  
-            export $(echo "$BUILD_ARGS" | xargs)
+            IMAGE_VALUES=$(SOURCE_VERSION=${{ inputs.source-version }} make image-values)
+            export $(echo "$IMAGE_VALUES" | xargs)
             echo "target_image=$TARGET_IMAGE" >> "$GITHUB_OUTPUT"
 
       - name: Build and push image
@@ -86,7 +86,7 @@ jobs:
           context: source-repo/
           platforms: ${{ inputs.platforms }}
           build-args: |
-            ${{ steps.build-args.outputs.build-args }}
+            ${{ steps.build-args.outputs.value }}
           push: ${{ inputs.push }}
           load: ${{ ! inputs.push }}
           tags: ${{ steps.build-args.outputs.target_image }}
