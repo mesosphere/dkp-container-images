@@ -1,0 +1,16 @@
+{
+  "$schema": "https://raw.githubusercontent.com/jetify-com/devbox/0.14.0/.schema/devbox.schema.json",
+  "packages": [
+    "just@latest",
+    "gnumake@latest",
+    "wget@latest"
+  ],
+  "shell": {
+    "init_hook": [
+      "echo 'dkp-container-images devbox environment loaded'"
+    ],
+    "scripts": {
+      "build": ["just --list"]
+    }
+  }
+}

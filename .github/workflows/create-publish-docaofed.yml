@@ -1,0 +1,71 @@
+name: Create and Publish DocaOfed Driver
+
+on:
+  workflow_dispatch:
+    inputs:
+        linux_distro:
+            description: 'The Linux distribution to publish the DocaOfed driver for'
+            required: true
+            type: choice
+            options:
+              - ubuntu22.04
+              - ubuntu24.04
+            default: ubuntu22.04
+        arch:
+            description: 'The architecture to publish the DocaOfed driver for'
+            required: true
+            type: choice
+            options:
+              - x86_64
+              - aarch64
+            default: x86_64
+        base_image:
+            description: 'The base image to publish the DocaOfed driver for'
+            required: true
+            type: string
+            default: ubuntu:22.04
+        kernel_version:
+            description: 'The kernel version to publish the DocaOfed driver for'
+            required: true
+            type: string
+            default: 5.15.0-139-generic
+        doca_version:
+            description: 'The Doca version to publish the DocaOfed driver for'
+            required: true
+            type: string
+            default: 3.2.0
+        ofed_version:
+            description: 'The OFED version to publish the DocaOfed driver for'
+            required: true
+            type: string
+            default: 25.10-1.2.8.0
+
+jobs:
+   create-publish-docaofed-driver:
+    runs-on:
+      - self-hosted-ncn-docker-medium
+    permissions:
+      contents: read
+      packages: write
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Install NIX
+      uses: cachix/install-nix-action@v31
+
+    - name: Install devbox
+      uses: jetify-com/devbox-install-action@v0.13.0
+      with:
+        enable-cache: true
+        skip-nix-installation: true
+
+    - name: Login to GHCR
+      uses: docker/login-action@v3
+      with:
+        registry: ghcr.io
+        username: ${{ github.actor }}
+        password: ${{ secrets.GITHUB_TOKEN }}
+
+    - name: Create and publish doca-ofed driver
+      run: devbox run -- just publish-doca-ofed-driver ghcr.io/mesosphere ${{ inputs.linux_distro }} ${{ inputs.arch }} ${{ inputs.base_image }} ${{ inputs.kernel_version }} ${{ inputs.doca_version }} ${{ inputs.ofed_version }}
