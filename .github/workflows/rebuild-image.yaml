@@ -28,7 +28,7 @@ jobs:
   build_image:
 
     runs-on:
-      - self-hosted-cloudnative-small
+      - self-hosted-nutanix-docker-small
 
     steps:
 

@@ -19,7 +19,7 @@ import (
 )
 
 var (
-	ghcrOrg = "mesosphere/dkp-container-images"
+	ghcrOrg = "nutanix-cloud-native/dkp-container-images"
 
 	// <original>-d2iq.<version>
 	imageTagSuffix = "d2iq"

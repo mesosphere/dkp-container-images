@@ -4,7 +4,10 @@ SOURCE_IMAGE_REPO ?= ghcr.io/tremolosecurity/kube-oidc-proxy
 SOURCE_IMAGE_VERSION ?= 1.0.9
 SOURCE_IMAGE ?= $(SOURCE_IMAGE_REPO):$(SOURCE_IMAGE_VERSION)
 
-TARGET_IMAGE_REPO ?= ghcr.io/mesosphere/dkp-container-images/kube-oidc-proxy
+REPO ?= $(shell gh repo view --json name --template '{{.name}}')
+ORG ?= $(shell gh repo view --json owner --template '{{.owner.login}}')
+
+TARGET_IMAGE_REPO ?= ghcr.io/${ORG}/${REPO}/kube-oidc-proxy
 TARGET_IMAGE_VERSION ?= $(SOURCE_IMAGE_VERSION)
 TARGET_IMAGE ?= $(TARGET_IMAGE_REPO):$(TARGET_IMAGE_VERSION)
 
