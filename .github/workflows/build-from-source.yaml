@@ -30,8 +30,7 @@ permissions:
 jobs:
   build_from_source:
     runs-on:
-      - self-hosted
-      - small
+      - self-hosted-cloudnative-small
     steps:
       - name: Checkout automation repo
         uses: actions/checkout@v4
