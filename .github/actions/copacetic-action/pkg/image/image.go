@@ -18,7 +18,7 @@ import (
 //    - build new patched image
 //    - publish to patch registry
 //    - report: upgrade possible from original => patched
-// 2. original image with patched version in registry (ghcr.io/mesosphere/foo/nginx:v1-d2iq.XXX)
+// 2. original image with patched version in registry (ghcr.io/nutanix-cloud-native/foo/nginx:v1-d2iq.XXX)
 //    - scan patched and check if there are packages for update
 //    - if no new fixed packages
 //       - report: upgrade possible from original to patched

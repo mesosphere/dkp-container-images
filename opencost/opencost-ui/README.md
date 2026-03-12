@@ -20,7 +20,7 @@ This image should be built using the `build-from-source.yaml` workflow:
 2. Run workflow with parameters:
    - **source-repo**: `opencost/opencost-ui`
    - **source-version**: Version tag (e.g., `1.117.5`)
-   - **target-image**: `ghcr.io/mesosphere/dkp-container-images/opencost/opencost-ui`
+   - **target-image**: `ghcr.io/nutanix-cloud-native/dkp-container-images/opencost/opencost-ui`
    - **push**: Enable to push to registry
 
 Build arguments are automatically extracted from the Makefile.
@@ -38,4 +38,4 @@ docker build --build-arg ui_path=/dkp/opencost/frontend -t opencost-ui:test .
 
 ## Target Image
 
-`ghcr.io/mesosphere/dkp-container-images/opencost/opencost-ui:<version>`
+`ghcr.io/nutanix-cloud-native/dkp-container-images/opencost/opencost-ui:<version>`

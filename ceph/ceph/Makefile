@@ -2,7 +2,10 @@ SOURCE_IMAGE_REPO ?= quay.io/ceph/ceph
 SOURCE_IMAGE_VERSION ?= v18.2.2
 SOURCE_IMAGE ?= $(SOURCE_IMAGE_REPO):$(SOURCE_IMAGE_VERSION)
 
-TARGET_IMAGE_REPO ?= ghcr.io/mesosphere/dkp-container-images/ceph/ceph
+REPO ?= $(shell gh repo view --json name --template '{{.name}}')
+ORG ?= $(shell gh repo view --json owner --template '{{.owner.login}}')
+
+TARGET_IMAGE_REPO ?= ghcr.io/${ORG}/${REPO}/ceph/ceph
 TARGET_IMAGE_VERSION ?= $(SOURCE_IMAGE_VERSION)
 TARGET_IMAGE ?= $(TARGET_IMAGE_REPO):$(TARGET_IMAGE_VERSION)
 
@@ -15,4 +18,3 @@ build-args:
 	@echo "SOURCE_IMAGE=$(SOURCE_IMAGE)"
 	@echo "TARGET_IMAGE=$(TARGET_IMAGE)"
 	@echo "TARGET_IMAGE_VERSION=$(TARGET_IMAGE_VERSION)"
-

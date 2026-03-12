@@ -11,41 +11,41 @@ Custom and maintained container images used by **NKP** (Nutanix Kubernetes Platf
 All images are published to **GitHub Container Registry (GHCR)** under the org/repo path:
 
 - **Registry:** `ghcr.io`
-- **Image path pattern:** `ghcr.io/mesosphere/dkp-container-images/<image-name>`
+- **Image path pattern:** `ghcr.io/nutanix-cloud-native/dkp-container-images/<image-name>`
 
 Examples:
 
 | Image | Full image reference |
 |-------|------------------------|
-| Ceph | `ghcr.io/mesosphere/dkp-container-images/ceph/ceph:<version>` |
-| Rook Ceph | `ghcr.io/mesosphere/dkp-container-images/rook/ceph:<version>` |
-| CloudNative-PG PostgreSQL | `ghcr.io/mesosphere/dkp-container-images/cloudnative-pg/postgresql:<version>` |
-| OpenCost UI | `ghcr.io/mesosphere/dkp-container-images/opencost/opencost-ui:<version>` |
-| kube-oidc-proxy | `ghcr.io/mesosphere/dkp-container-images/kube-oidc-proxy:<version>` |
-| COSI controller/sidecar | `ghcr.io/mesosphere/dkp-container-images/objectstorage-controller:<version>` etc. |
+| Ceph | `ghcr.io/nutanix-cloud-native/dkp-container-images/ceph/ceph:<version>` |
+| Rook Ceph | `ghcr.io/nutanix-cloud-native/dkp-container-images/rook/ceph:<version>` |
+| CloudNative-PG PostgreSQL | `ghcr.io/nutanix-cloud-native/dkp-container-images/cloudnative-pg/postgresql:<version>` |
+| OpenCost UI | `ghcr.io/nutanix-cloud-native/dkp-container-images/opencost/opencost-ui:<version>` |
+| kube-oidc-proxy | `ghcr.io/nutanix-cloud-native/dkp-container-images/kube-oidc-proxy:<version>` |
+| COSI controller/sidecar | `ghcr.io/nutanix-cloud-native/dkp-container-images/objectstorage-controller:<version>` etc. |
 
 CI logs in to GHCR and pushes only when the workflow input **Push to registry** is set to `true` (default is `false` for safety).
 
 ## Usage in NKP: management and workload clusters
 
-**Yes.** Both the **management** and **workload** clusters use images with the prefix `ghcr.io/mesosphere/dkp-container-images`.
+**Yes.** Both the **management** and **workload** clusters use images with the prefix `ghcr.io/nutanix-cloud-native/dkp-container-images`.
 
 **Management cluster** (e.g. `dm-nkp-mgmt-1.conf`) and **workload cluster** (e.g. `dm-nkp-workload-1.kubeconfig`) use the same set of mirrored images. Example images in use:
 
 | Image | Full image reference |
 |-------|------------------------|
-| CloudNative-PG PostgreSQL | `ghcr.io/mesosphere/dkp-container-images/cloudnative-pg/postgresql:17.5-minimal-bookworm` |
-| kube-oidc-proxy | `ghcr.io/mesosphere/dkp-container-images/kube-oidc-proxy:1.0.9` |
-| COSI objectstorage-controller | `ghcr.io/mesosphere/dkp-container-images/objectstorage-controller:v20250110-a29e5f6` |
-| COSI objectstorage-sidecar | `ghcr.io/mesosphere/dkp-container-images/objectstorage-sidecar:v20240513-v0.1.0-35-gefb3255` |
-| OpenCost UI | `ghcr.io/mesosphere/dkp-container-images/opencost/opencost-ui:1.118.0` |
+| CloudNative-PG PostgreSQL | `ghcr.io/nutanix-cloud-native/dkp-container-images/cloudnative-pg/postgresql:17.5-minimal-bookworm` |
+| kube-oidc-proxy | `ghcr.io/nutanix-cloud-native/dkp-container-images/kube-oidc-proxy:1.0.9` |
+| COSI objectstorage-controller | `ghcr.io/nutanix-cloud-native/dkp-container-images/objectstorage-controller:v20250110-a29e5f6` |
+| COSI objectstorage-sidecar | `ghcr.io/nutanix-cloud-native/dkp-container-images/objectstorage-sidecar:v20240513-v0.1.0-35-gefb3255` |
+| OpenCost UI | `ghcr.io/nutanix-cloud-native/dkp-container-images/opencost/opencost-ui:1.118.0` |
 
 The same registry prefix also appears in:
 
 - **Docs:** logging (Fluent Bit), Prometheus/Alertmanager (Karma), and related config examples.
 - **Support bundle** (`troubleshoot.sh/support-bundle-...`): Fluent Bit, Rook/Ceph, Karma, Kubecost frontend, kube-oidc-proxy, PostgreSQL, Flux kustomize-controller, Weaviate, nginx-unprivileged, and others.
 
-So **DKP’s mirrored images from `ghcr.io/mesosphere/dkp-container-images` are in use on both management and workload clusters** (and in docs and support-bundle references).
+So **DKP’s mirrored images from `ghcr.io/nutanix-cloud-native/dkp-container-images` are in use on both management and workload clusters** (and in docs and support-bundle references).
 
 ---
 
@@ -69,7 +69,7 @@ Use this when you have a **Dockerfile in this repo** that uses an upstream image
 3. **Set the target registry in the Makefile:**
 
    ```makefile
-   TARGET_IMAGE_REPO ?= ghcr.io/mesosphere/dkp-container-images/<path>/<name>
+   TARGET_IMAGE_REPO ?= ghcr.io/nutanix-cloud-native/dkp-container-images/<path>/<name>
    TARGET_IMAGE ?= $(TARGET_IMAGE_REPO):$(TARGET_IMAGE_VERSION)
    ```
 
@@ -82,7 +82,7 @@ Use this when you have a **Dockerfile in this repo** that uses an upstream image
    - **platforms:** default `linux/amd64`; add more for multi-arch if needed.
    - **push:** set to `true` when ready to publish to GHCR.
 
-6. **Local test (optional):**  
+6. **Local test (optional):**
    From the image directory: `make docker-build` (override vars as needed). Push manually to GHCR if you’re not using the workflow yet.
 
 ### Option B: Build from upstream source
@@ -95,7 +95,7 @@ Use this when the image is built by **cloning an upstream repo** and building th
    - **`build-args`** – prints build args for the upstream Dockerfile (e.g. `ui_path=...`), one `KEY=VALUE` per line.
    - **`image-values`** – prints `TARGET_IMAGE=<full tag>` (and any other vars the workflow expects). The workflow runs `make build-args` and `make image-values` from `./automation-repo/<source-repo>` (e.g. `opencost/opencost-ui`), so paths must match the **source-repo** input.
 
-3. **Set the target image** to `ghcr.io/mesosphere/dkp-container-images/<path>/<name>:<version>` in the Makefile.
+3. **Set the target image** to `ghcr.io/nutanix-cloud-native/dkp-container-images/<path>/<name>:<version>` in the Makefile.
 
 4. **Add a README** explaining the image, the upstream repo, and that production builds use **Build image from source**.
 
@@ -111,21 +111,21 @@ Use this when the image is built by **cloning an upstream repo** and building th
 
 ## Updating an existing image
 
-- **In-repo Dockerfile:**  
-  - Bump the version (e.g. `SOURCE_IMAGE_VERSION`) in the image’s **Makefile** (or pass it via workflow **build-args**).  
+- **In-repo Dockerfile:**
+  - Bump the version (e.g. `SOURCE_IMAGE_VERSION`) in the image’s **Makefile** (or pass it via workflow **build-args**).
   - Run **Actions → Rebuild image** with the correct **directory** and **push: true** when ready.
 
-- **Build from source:**  
-  - Run **Actions → Build image from source** with a new **source-version** (and any **build-args**). Set **push: true** to publish.  
+- **Build from source:**
+  - Run **Actions → Build image from source** with a new **source-version** (and any **build-args**). Set **push: true** to publish.
   - Optionally update the README or default version in the Makefile in this repo.
 
-In both cases, the image is pushed to **`ghcr.io/mesosphere/dkp-container-images/...`** when **push** is enabled.
+In both cases, the image is pushed to **`ghcr.io/nutanix-cloud-native/dkp-container-images/...`** when **push** is enabled.
 
 ---
 
 ## CVE patching
 
-The **CVE patch** workflow (Actions → **CVE patch**) rebuilds and patches existing images for CVEs and pushes the patched images. It can be triggered manually (input: list of **images**) or via `repository_dispatch` with type `patch-images`. Patched images are published to GHCR (under the same `ghcr.io/mesosphere/...` naming used by this repo).
+The **CVE patch** workflow (Actions → **CVE patch**) rebuilds and patches existing images for CVEs and pushes the patched images. It can be triggered manually (input: list of **images**) or via `repository_dispatch` with type `patch-images`. Patched images are published to GHCR (under the same `ghcr.io/nutanix-cloud-native/...` naming used by this repo).
 
 ---
 
@@ -133,8 +133,8 @@ The **CVE patch** workflow (Actions → **CVE patch**) rebuilds and patches exis
 
 | Goal | Workflow | Where it pushes |
 |------|----------|-----------------|
-| New/updated image from in-repo Dockerfile | **Rebuild image** | `ghcr.io/mesosphere/dkp-container-images/<directory>` |
-| New/updated image from upstream source | **Build image from source** | `ghcr.io/mesosphere/dkp-container-images/<source-repo path>` |
+| New/updated image from in-repo Dockerfile | **Rebuild image** | `ghcr.io/nutanix-cloud-native/dkp-container-images/<directory>` |
+| New/updated image from upstream source | **Build image from source** | `ghcr.io/nutanix-cloud-native/dkp-container-images/<source-repo path>` |
 | Patch existing images for CVEs | **CVE patch** | Same GHCR locations |
 
 Per-image details (build args, versions, extensions) are documented in each component’s README (e.g. `ceph/ceph/README.md`, `kube-oidc-proxy/README.md`, `opencost/opencost-ui/README.md`).
