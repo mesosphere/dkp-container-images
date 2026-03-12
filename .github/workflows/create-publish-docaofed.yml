@@ -43,8 +43,7 @@ on:
 jobs:
    create-publish-docaofed-driver:
     runs-on:
-      - self-hosted
-      - small
+      - self-hosted-cloudnative-small
     permissions:
       contents: read
       packages: write
@@ -60,7 +59,7 @@ jobs:
       with:
         enable-cache: true
         skip-nix-installation: true
-    
+
     - name: Set up QEMU
       uses: docker/setup-qemu-action@v3
 
