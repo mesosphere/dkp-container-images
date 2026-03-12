@@ -28,8 +28,7 @@ jobs:
   build_image:
 
     runs-on:
-      - self-hosted
-      - small
+      - self-hosted-cloudnative-small
 
     steps:
 
@@ -80,4 +79,3 @@ jobs:
           push: ${{ inputs.push }}
           load: ${{ ! inputs.push }}
           tags: ${{ steps.build-args.outputs.target_image }}
-
