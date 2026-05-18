@@ -10,4 +10,3 @@ RUN dnf remove python3-joblib jq -y
 
 COPY --from=jq /jq /usr/bin/jq
 RUN chmod +x /usr/bin/jq
-USER ceph
