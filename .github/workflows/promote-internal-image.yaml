@@ -135,7 +135,7 @@ jobs:
           echo "platforms=${platforms}" >> "$GITHUB_OUTPUT"
 
       - name: Build and push promoted image
-        uses: docker/build-push-action@v7.1.0
+        uses: docker/build-push-action@v7.2.0
         with:
           context: ./${{ steps.resolve.outputs.build_context }}
           platforms: ${{ steps.platforms.outputs.platforms }}
