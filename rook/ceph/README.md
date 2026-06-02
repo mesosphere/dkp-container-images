@@ -1,6 +1,6 @@
 # rook/ceph
 
-A custom build of `rook/ceph` container image that removes the `python-joblib` which is installed as part of Python scikit and is only required for disk usage prediction, which is not enabled by default.
+A custom build of `rook/ceph` container image that removes the `python-joblib` which is installed as part of Python scikit and is only required for disk usage prediction, which is not enabled by default and upgrades the jq utility to version `1.8.2rc1`.
 
 ## Build
 
