@@ -1,0 +1,1 @@
+echo 'dkp-container-images devbox environment loaded'
