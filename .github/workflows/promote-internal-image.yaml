@@ -12,6 +12,7 @@ on:
           - cluster-api-provider-nutanix
           - cluster-api-runtime-extensions-nutanix
           - cluster-api-runtime-extensions-helm-chart-bundle-initializer
+          - cluster-api-provider-host-agent
       version:
         description: "Image version/tag"
         type: string
@@ -50,6 +51,7 @@ jobs:
           version="${{ inputs.version }}"
           component="${{ inputs.component }}"
           harbor_registry="harbor.eng.nutanix.com/ncn-prerelease"
+          ironstack_harbor_registry="harbor.eng.nutanix.com/ironstack"
           default_branch="${{ github.event.repository.default_branch }}"
           current_ref="${{ github.ref_name }}"
 
@@ -84,6 +86,11 @@ jobs:
               source_image="${harbor_registry}/internal-cluster-api-runtime-extensions-helm-chart-bundle-initializer:${version}"
               target_image="ghcr.io/${GITHUB_REPOSITORY}/nkp-cluster-api-runtime-extensions-helm-chart-bundle-initializer:${version}"
               ;;
+            cluster-api-provider-host-agent)
+              build_context="nkp/cluster-api-provider-host-agent"
+              source_image="${ironstack_harbor_registry}/cluster-api-provider-host-agent:${version}"
+              target_image="ghcr.io/${GITHUB_REPOSITORY}/cluster-api-provider-host-agent:${version}"
+              ;;
             *)
               echo "Unsupported component: $component" >&2
               exit 1
@@ -112,6 +119,13 @@ jobs:
           echo "build_context=$build_context" >> "$GITHUB_OUTPUT"
           echo "source_image=$source_image" >> "$GITHUB_OUTPUT"
           echo "target_image=$target_image" >> "$GITHUB_OUTPUT"
+
+      - name: Login to Nutanix Harbor
+        uses: docker/login-action@v3
+        with:
+          registry: harbor.eng.nutanix.com
+          username: ${{ secrets.ENG_HARBOR_USERNAME }}
+          password: ${{ secrets.ENG_HARBOR_PASSWORD }}
 
       - name: Detect source image platforms
         id: platforms
